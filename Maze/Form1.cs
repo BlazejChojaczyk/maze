@@ -32,6 +32,14 @@ namespace Maze
 
         private void button1_Click(object sender, EventArgs e)
         {
+            tmaze1.path = tmaze1.CreationPath;
+            tmaze1.PathCount = 0;
+            timer1.Start();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            tmaze1.FindPath();
             tmaze1.PathCount = 0;
             timer1.Start();
         }

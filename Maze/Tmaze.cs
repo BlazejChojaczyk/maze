@@ -20,6 +20,8 @@ namespace Maze
         public static Random rnd = new Random();
         public List<TCell> path;
         public int PathCount;
+        public List<TCell> CreationPath { get; set; }
+        public List<TCell> EscapePath { get; set; }
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -56,6 +58,11 @@ namespace Maze
                 }
                 e.Graphics.FillRectangle(brush, rc);
             }
+            brush.Color = Color.Red;
+            e.Graphics.FillRectangle(brush, StartCell.x, StartCell.y, HallSize, HallSize);
+
+            brush.Color = Color.Green;
+            e.Graphics.FillRectangle(brush, StopCell.x, StopCell.y, HallSize, HallSize);
             //for (var x = 0; x < n; x++)
             //{
             //    for (var y = 0; y < n; y++)
@@ -139,7 +146,70 @@ namespace Maze
                     cell = neigh;
                 }
             } while (depthCells.Count > 0);
+            path.Add(cell);
             PathCount = path.Count;
+            CreationPath = new List<TCell>(path);
+        }
+
+        public void FindPath()
+        {
+            path = new List<TCell>();
+            FindPathFrom(StartCell);
+        }
+
+        private bool FindPathFrom(TCell cell)
+        {
+            path.Add(cell);
+            if (cell == StopCell)
+            {
+                return true;
+            }
+            foreach (var neigh in cell.Connected)
+            {
+                if (!path.Contains(neigh) && FindPathFrom(neigh))
+                {
+                    return true;
+                }
+            }
+            path.RemoveAt(path.Count - 1);
+            return false;
+        }
+
+        protected override void OnPreviewKeyDown(PreviewKeyDownEventArgs e)
+        {
+            base.OnPreviewKeyDown(e);
+
+            var x = StartCell.x;
+            var y = StartCell.y;
+
+            switch (e.KeyCode)
+            {
+                case Keys.Up:
+                    y--;
+                    break;
+                case Keys.Down:
+                    y++;
+                    break;
+                case Keys.Left:
+                    x--;
+                    break;
+                case Keys.Right:
+                    x++;
+                    break;
+            }
+            if (x >= 0 && x < n && y >= 0 && y < n)
+            {
+                var neigh = Cells[x, y];
+                if (neigh.Connected.Contains(StartCell))
+                {
+                    StartCell = neigh;
+                    Invalidate();
+                    if (StartCell == StopCell)
+                    {
+                        MessageBox.Show("Congratulation, Maze solved !");
+                    }
+                }
+            }
         }
     }
 }
